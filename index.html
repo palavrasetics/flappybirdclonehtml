@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flappy Bird Clone</title>
+    <style>
+        canvas {
+            display: block;
+            margin: auto;
+            background-color: #cce3f2;
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 500;
+        canvas.height = 700;
+
+        class Bird {
+            constructor() {
+                this.x = 50;
+                this.y = 200;
+                this.vy = 0;
+                this.width = 20;
+                this.height = 20;
+                this.weight = 1;
+            }
+
+            update() {
+                if (this.y > canvas.height - this.height) {
+                    this.y = canvas.height - this.height;
+                    this.vy = 0;
+                } else {
+                    this.vy += this.weight;
+                    this.y += this.vy;
+                }
+
+                if (this.y < 0 + this.height) {
+                    this.y = this.height;
+                    this.vy = 0;
+                }
+
+                if (spacePressed && this.y > this.height * 3) this.flap();
+                this.draw();
+            }
+
+            draw() {
+                ctx.fillStyle = 'red';
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+
+            flap() {
+                this.vy -= 2;
+            }
+        }
+
+        class Obstacle {
+            constructor() {
+                this.top = (Math.random() * canvas.height) / 3;
+                this.bottom = (Math.random() * canvas.height) / 3;
+                this.x = canvas.width;
+                this.width = 20;
+                this.color = 'green';
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, 0, this.width, this.top);
+                ctx.fillRect(this.x, canvas.height - this.bottom, this.width, this.bottom);
+            }
+
+            update() {
+                this.x -= 2;
+                this.draw();
+            }
+        }
+
+        const bird = new Bird();
+        let spacePressed = false;
+        let obstacles = [];
+
+        window.addEventListener('keydown', function(e) {
+            if (e.code === 'Space') spacePressed = true;
+        });
+
+        window.addEventListener('keyup', function(e) {
+            if (e.code === 'Space') spacePressed = false;
+        });
+
+        function handleObstacles() {
+            if (frame % 100 === 0) {
+                obstacles.push(new Obstacle());
+            }
+            for (let i = 0; i < obstacles.length; i++) {
+                obstacles[i].update();
+            }
+
+            if (obstacles.length > 20) {
+                obstacles.shift();
+            }
+        }
+
+        let frame = 0;
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            bird.update();
+            handleObstacles();
+            frame++;
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
